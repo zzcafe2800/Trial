@@ -106,6 +106,7 @@
     box-shadow:var(--hard);transition:transform .08s,box-shadow .08s}
   .btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
   .btn.full{width:100%}
+  #toCustom{background:#eaf4f8;border-color:#4a8aa0}   /* こだわり: ほんのり水色 */
   .btn.primary{background:var(--blue);color:#fff}
   .btn.ghost{background:var(--paper-2)}
   .grid{display:grid;gap:9px}.g2{grid-template-columns:1fr 1fr}
@@ -247,8 +248,13 @@
   .pvThick{position:absolute;z-index:6;display:flex;align-items:center;gap:0.8cqw;
     background:rgba(13,18,32,.9);border:1px solid rgba(255,255,255,.32);border-radius:1cqw;padding:0.6cqw 1cqw;
     box-shadow:0 4px 14px rgba(0,0,0,.5);width:22cqw;min-width:170px}
-  .pvThick.br{right:1.6cqw;bottom:1.6cqw}   /* easy mode: bottom-right */
-  .pvThick.tl{left:1.6cqw;top:1.6cqw}        /* custom mode: top-left */
+  .pvThickWrap{position:absolute;z-index:6;display:flex;flex-direction:column;gap:0.7cqw;align-items:stretch}
+  .pvThickWrap.br{right:1.6cqw;bottom:1.6cqw}
+  .pvThickWrap.tl{left:1.6cqw;top:1.6cqw}
+  .pvThick{position:static}
+  .pvFrameOnly{display:flex;align-items:center;justify-content:space-between;gap:0.8cqw;
+    background:rgba(13,18,32,.9);border:1px solid rgba(255,255,255,.32);border-radius:1cqw;padding:0.5cqw 1cqw;
+    box-shadow:0 4px 14px rgba(0,0,0,.5)}
   .pvThick .tmLabel{font-size:0.9cqw;font-weight:800;color:#fff;white-space:nowrap;letter-spacing:.02em}
   .pvThick .tmVal{font-size:0.9cqw;font-weight:800;color:#cfe0ea;min-width:2.6cqw;text-align:right}
   .pvThick input[type=range]{flex:1 1 auto;min-width:0;accent-color:var(--blue);height:4px}
@@ -405,14 +411,14 @@
     background:radial-gradient(100% 80% at 50% 0%,rgba(255,214,150,.06),transparent 60%),linear-gradient(160deg,#2c2117,#1a120c)}
   .welcomeCard{position:relative;background:var(--paper);background-image:var(--noise);
     border:2px solid var(--ink);border-radius:18px;padding:38px 30px 30px;
-    width:min(86vw,380px);text-align:center;cursor:pointer;
+    width:min(76vw,320px);text-align:center;cursor:pointer;
     box-shadow:5px 5px 0 rgba(51,41,31,.85),0 24px 60px rgba(0,0,0,.6);transition:transform .1s}
   .welcomeCard:active{transform:scale(.98)}
   .welcomeCard::before{content:"";position:absolute;left:50%;top:-11px;width:120px;height:19px;
     transform:translateX(-50%) rotate(-2deg);background:var(--tape);border-radius:2px}
   .wcTitle{font-family:"Hiragino Mincho ProN",serif;font-weight:700;font-size:21px;
     letter-spacing:.1em;color:var(--ink);margin-bottom:14px}
-  .wcFrame{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;
+  .wcFrame{position:relative;width:100%;aspect-ratio:16/9;max-height:150px;border-radius:12px;overflow:hidden;
     border:2.5px dashed var(--ink-soft);background:rgba(91,156,184,.08);
     display:flex;align-items:center;justify-content:center;margin-bottom:12px;transition:border-color .15s,background .15s}
   .welcomeCard:active .wcFrame{border-color:var(--blue)}
@@ -514,7 +520,7 @@
         </div>
         <div class="grid g2 row">
           <button class="btn" id="sfl1">🎲 シャッフル</button>
-          <button class="btn" id="toCustom">カスタム</button></div>
+          <button class="btn" id="toCustom">こだわり</button></div>
         <div class="row"><button class="btn primary full" id="easyDl">ダウンロード</button></div>
       </div>
       <div class="easyPresetsWrap">
@@ -546,7 +552,7 @@
         </div>
       </div>
 
-      <div class="fold ca" id="foldMat">
+      <div class="fold ca" id="foldMat" style="display:none">
         <button class="foldhead">台紙（外の白いふち） <span class="arr">▸</span></button>
         <div class="foldbody">
           <div class="row" style="margin-top:10px"><label>台紙をつける</label>
@@ -602,10 +608,14 @@
               <button data-v="none" class="on">なし</button><button data-v="bottom">下</button>
               <button data-v="top">上</button><button data-v="vignette">周囲</button></div></div>
           <div class="row"><label>フェード強さ <span class="val" id="fadeAmtV">50%</span></label><input type="range" id="fadeAmt" min="0" max="100" value="50"></div>
+          <div class="row"><label>フェードの色</label>
+            <div class="seg" id="fadeColMode"><button data-v="clear" class="on">透明</button><button data-v="color">色</button></div></div>
+          <div class="row" id="fadeColRow" style="display:none"><label>色をえらぶ</label>
+            <div class="cwrap"><div class="ci"><input type="color" id="fadeColor" value="#ffffff"><small>色</small></div></div></div>
         </div>
       </div>
       <hr>
-      <div class="row"><button class="btn full" id="toTemplate">テンプレから選ぶ（おまかせ）</button></div>
+      <div class="row"><button class="btn full" id="toTemplate">テンプレから選ぶ</button></div>
     </div>
 
     <!-- FRAME -->
@@ -653,7 +663,7 @@
 <div class="modeOv" id="modeOv">
   <div class="modeCard">
     <div class="mTitle">部屋サムネくん</div>
-    <button class="mBtn" id="mEasy"><b>おまかせ</b></button>
+    <button class="mBtn" id="mEasy"><b>テンプレ</b></button>
     <button class="mBtn ghost" id="mCustom"><b>カスタム</b></button>
   </div>
 </div>
@@ -671,13 +681,13 @@
 
 <script>
 "use strict";
-const VERSION="0.55.0";
+const VERSION="0.57.0";
 const cv=document.getElementById("c"),ctx=cv.getContext("2d");
 const W=1920,H=1080;
 let uid=0;const nid=()=>"b"+(++uid);
 
 const S={
-  room:{img:null,zoom:1,ox:0,oy:0,shape:"rect",bri:1,con:1,sat:1,warm:0,fade:"none",fadeAmt:0.5,pat:"none",patAmt:0.22,patColor:"#ffffff",patScale:1,patAngle:0,patOx:0,patOy:0,patCropPath:null,patLocked:false,edgeBlur:0,margin:0,matOn:false,matColor:"#ffffff",matWidth:0.05,matRadius:0,matShadow:true},
+  room:{img:null,zoom:1,ox:0,oy:0,shape:"rect",bri:1,con:1,sat:1,warm:0,fade:"none",fadeAmt:0.5,fadeColor:"transparent",pat:"none",patAmt:0.22,patColor:"#ffffff",patScale:1,patAngle:0,patOx:0,patOy:0,patCropPath:null,patLocked:false,edgeBlur:0,margin:0,matOn:false,matColor:"#ffffff",matWidth:0.05,matRadius:0,matShadow:true},
   patterns:[],          // 追加した模様レイヤー（各自 type/color/amt/scale/angle/ox/oy/cropPath/locked）
   autoPalette:null,     // おまかせ配色: 画像から解析したパレット（ある時はテンプレをこの色で塗る）
   patStackOn:false,     // ①部屋「模様重ね」トグル
@@ -2114,7 +2124,7 @@ function render(){
   if(!exporting&&S.stackOn&&_frameTab&&!selectedFrame().locked)drawFrameHandles();
   if(!exporting&&S.patStackOn&&_roomTab&&selectedPat()&&!selectedPat().locked)drawPatHandles();
   for(const c of S.people)if(!c.behind)drawChar(c);
-  for(const b of S.text.blocks)drawBlock(b);
+  if(!S._frameOnly)for(const b of S.text.blocks)drawBlock(b);
   miniUpdate();
   if(!exporting&&selId){const sb=S.text.blocks.find(b=>b.id===selId);
     if(sb&&sb._box){ctx.save();ctx.setLineDash([10,8]);ctx.strokeStyle="rgba(200,120,60,.9)";ctx.lineWidth=3;
@@ -2187,12 +2197,19 @@ function drawCover(img,r,g,extra){g=g||ctx;const ir=img.width/img.height,rr2=r.w
 let _blurC=null;
 function blurLayer(){if(!_blurC){_blurC=document.createElement("canvas");_blurC.width=W;_blurC.height=H;}return _blurC;}
 function applyFade(r){if(S.room.fade==="none"||S.room.fadeAmt<=0)return;const a=S.room.fadeAmt;
-  ctx.save();ctx.globalCompositeOperation="destination-out";let g;
-  if(S.room.fade==="bottom"){g=ctx.createLinearGradient(0,r.y+r.h*(1-a*0.9),0,r.y+r.h);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,1)");}
-  else if(S.room.fade==="top"){g=ctx.createLinearGradient(0,r.y+r.h*a*0.9,0,r.y);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,1)");}
+  const col=S.room.fadeColor,tinted=col&&col!=="transparent";
+  // if a fade color is chosen we overlay that color; otherwise we erase the photo to transparent (bg shows)
+  const c0=tinted?hexToRgba(col,0):"rgba(0,0,0,0)";
+  const c1=tinted?hexToRgba(col,1):"rgba(0,0,0,1)";
+  ctx.save();ctx.globalCompositeOperation=tinted?"source-over":"destination-out";let g;
+  if(S.room.fade==="bottom"){g=ctx.createLinearGradient(0,r.y+r.h*(1-a*0.9),0,r.y+r.h);g.addColorStop(0,c0);g.addColorStop(1,c1);}
+  else if(S.room.fade==="top"){g=ctx.createLinearGradient(0,r.y+r.h*a*0.9,0,r.y);g.addColorStop(0,c0);g.addColorStop(1,c1);}
   else{g=ctx.createRadialGradient(r.x+r.w/2,r.y+r.h/2,Math.min(r.w,r.h)*(0.5-a*0.35),r.x+r.w/2,r.y+r.h/2,Math.max(r.w,r.h)*0.62);
-    g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,1)");}
+    g.addColorStop(0,c0);g.addColorStop(1,c1);}
+  if(tinted)ctx.clip(buildPath(r,S.room.shape));
   ctx.fillStyle=g;ctx.fillRect(r.x,r.y,r.w,r.h);ctx.restore();}
+function hexToRgba(hex,a){if(!hex||hex[0]!=="#")return"rgba(0,0,0,"+a+")";const n=parseInt(hex.slice(1),16);
+  return"rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")";}
 let _charSil=null;
 function charSilhouette(img,dw,dh,color){
   // build a solid-color silhouette of the painted (non-transparent) pixels, sized dw×dh
@@ -2559,6 +2576,9 @@ function slider(id,setter,fmt){on(id,"input",e=>{const v=+e.target.value;setter(
 slider("zoom",v=>S.room.zoom=v/100,v=>v+"%");slider("edgeBlur",v=>S.room.edgeBlur=v/100,v=>v+"%");
 slider("bri",v=>S.room.bri=v/100,v=>v+"%");slider("con",v=>S.room.con=v/100,v=>v+"%");slider("sat",v=>S.room.sat=v/100,v=>v+"%");slider("warm",v=>S.room.warm=v/100,v=>v+"%");
 slider("fadeAmt",v=>S.room.fadeAmt=v/100,v=>v+"%");
+seg("fadeColMode",v=>{if(v==="color"){S.room.fadeColor=$("fadeColor")?$("fadeColor").value:"#ffffff";const rr=$("fadeColRow");if(rr)rr.style.display="";}
+  else{S.room.fadeColor="transparent";const rr=$("fadeColRow");if(rr)rr.style.display="none";}render();});
+colorIn("fadeColor",v=>{S.room.fadeColor=v;render();});
 slider("patAmt",v=>{const P=curPat();if(P)P.amt=v/100;else S.room.patAmt=v/100;},v=>v+"%");
 slider("patScale",v=>{const P=curPat();if(P)P.scale=v/100;else S.room.patScale=v/100;},v=>v+"%");
 slider("scrimAmt",v=>S.scrim.amt=v/100,v=>v+"%");
@@ -2677,7 +2697,7 @@ function buildPatList(){const el=$("patList");if(!el)return;el.innerHTML="";
     else{x.onclick=(e)=>{e.stopPropagation();S.patterns.splice(idx,1);if(S.selPat===idx)S.selPat=-1;else if(S.selPat>idx)S.selPat--;
         updatePatBtn();buildPatList();render();};}
     row.appendChild(x);el.appendChild(row);};
-  mkRow("ベース"+(baseHasPat()?"（"+patLabel(S.room.pat)+"）":"（なし）"),-1,true);
+  if(S.patStackOn)mkRow("ベース"+(baseHasPat()?"（"+patLabel(S.room.pat)+"）":"（なし）"),-1,true);
   S.patterns.forEach((P,i)=>mkRow(patLabel(P.type),i,false));}
 function syncPatUI(){const P=selectedPat();
   // when a stacked pattern is selected, the 模様 controls edit it; else edit base
@@ -2711,7 +2731,7 @@ function buildStackList(){const el=$("stackList");if(!el)return;el.innerHTML="";
         updateStackBtn();buildStackList();render();};}
     row.appendChild(x);
     el.appendChild(row);};
-  mkRow("メイン"+(S.frame.type==="none"?"（なし）":""),-1,true);
+  if(S.stackOn)mkRow("メイン"+(S.frame.type==="none"?"（なし）":""),-1,true);
   S.frames.forEach((F,i)=>mkRow((FRAME_LABEL[F.type]||F.type),i,false));}
 slider("margin2",v=>{S.room.margin=v/100;},v=>v+"%");
 // ---- mat board (台紙) ----
@@ -2789,7 +2809,7 @@ on("roomFile","change",e=>loadImg(e,img=>{S.room.img=img;S.room.zoom=1;S.room.ox
   const tg=$("autoColorToggle");if(tg&&tg.classList.contains("on")){const info=analyzeImageColors(img);const pal=buildAutoPalette(info);if(pal){S.autoPalette=pal;recolorToAuto();if(typeof renderAutoSwatches==="function")renderAutoSwatches();}}
   render();}));
 function buildCharList(){const list=$("charList");list.innerHTML="";S.people.forEach((c,i)=>{
-  const fold=document.createElement("div");fold.className="fold cd";
+  const fold=document.createElement("div");fold.className="fold cd open";
   const head=document.createElement("button");head.className="foldhead";
   head.innerHTML=`${c.name} <span class="arr">▸</span>`;
   head.onclick=()=>accordion(fold);
@@ -4187,10 +4207,16 @@ function pvOpen(){
   const isEasy=document.body.classList.contains("easy");
   const tv=Math.round(curFrame().thick*100);
   // frame-thickness bar: bottom-right in easy mode, top-left in custom mode
-  const thickBar=`<div class="pvThick ${isEasy?"br":"tl"}" id="pvThick">
-      <span class="tmLabel">枠の太さ</span>
-      <input type="range" id="pvThickRange" min="1" max="16" step="0.5" value="${tv}">
-      <span class="tmVal" id="pvThickVal">${tv}%</span>
+  const thickBar=`<div class="pvThickWrap ${isEasy?"br":"tl"}">
+      <div class="pvFrameOnly" id="pvFrameOnly">
+        <span class="tmLabel">枠のみ</span>
+        <button class="autoToggle${S._frameOnly?" on":""}" id="pvFrameOnlyTg" role="switch" aria-checked="${S._frameOnly?"true":"false"}"><span class="knob"></span></button>
+      </div>
+      <div class="pvThick" id="pvThick">
+        <span class="tmLabel">枠の太さ</span>
+        <input type="range" id="pvThickRange" min="1" max="16" step="0.5" value="${tv}">
+        <span class="tmVal" id="pvThickVal">${tv}%</span>
+      </div>
     </div>`;
   // easy mode: shuffle + おまかせ配色 at bottom-left. custom mode: a frame gallery strip instead.
   const ctrls=isEasy
@@ -4231,6 +4257,11 @@ function pvOpen(){
     const lv=ov.querySelector("#pvThickVal");if(lv)lv.textContent=v+"%";
     const ts=$("thick");if(ts){ts.value=v;const tl=$("thickV");if(tl)tl.textContent=v+"%";}
     refreshGallery();refreshPvThumb();});
+  const fo=ov.querySelector("#pvFrameOnly");if(fo)fo.addEventListener("click",stop);
+  const foTg=ov.querySelector("#pvFrameOnlyTg");if(foTg)foTg.addEventListener("click",e=>{stop(e);
+    S._frameOnly=!foTg.classList.contains("on");
+    foTg.classList.toggle("on",S._frameOnly);foTg.setAttribute("aria-checked",S._frameOnly?"true":"false");
+    refreshPvThumb();});
   if(isEasy){
     const cbox=ov.querySelector("#pvCtrls");if(cbox)cbox.addEventListener("click",stop);
     const sh=ov.querySelector("#pvShuffle");if(sh)sh.addEventListener("click",e=>{stop(e);shuffleLook();refreshPvThumb();});
@@ -4258,7 +4289,7 @@ function pvOpen(){
     // mouse wheel (vertical) scrolls the strip horizontally
     strip.addEventListener("wheel",e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){strip.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});}
   }
-  ov.addEventListener("click",()=>ov.remove());
+  ov.addEventListener("click",()=>{S._frameOnly=false;render();ov.remove();});
 }
 on("pvBtn","click",pvOpen);on("miniPv","click",pvOpen);
 on("txtDockHead","click",()=>$("txtDock").classList.toggle("closed"));
@@ -4337,10 +4368,14 @@ function setAutoColor(on){
 on("autoColorToggle","click",()=>setAutoColor(!$("autoColorToggle").classList.contains("on")));
 
 on("sfl1","click",shuffleLook);
-on("toCustom","click",()=>{document.body.classList.remove("easy");updateStackBtnVis();updatePatBtnVis();});
+on("toCustom","click",()=>{document.body.classList.remove("easy");window._fromEasy=true;updateToTemplateLabel();updateStackBtnVis();updatePatBtnVis();});
+function updateToTemplateLabel(){const b=$("toTemplate");if(b)b.textContent=window._fromEasy?"◀ テンプレに戻る":"テンプレから選ぶ";}
 on("toTemplate","click",()=>{
+  if(window._fromEasy){
+    // we came from こだわり — just go back, keep everything
+    window._fromEasy=false;updateToTemplateLabel();
+    document.body.classList.add("easy");updateStackBtnVis();updatePatBtnVis();render();return;}
   if(confirm("これまで作ったサムネがすべてリセットされます。\nテンプレ選びに進みますか？\n\n［OK＝リセットして進む］［キャンセル＝やめる］")){
-    // reset to a clean state, then jump to easy mode
     S.text.blocks=[];S.frames=[];S.selFrame=-1;S.stackOn=false;
     S.frame.scale=1;S.frame.angle=0;S.frame.ratio=1;S.frame.crop=0;S.frame.cropRect=null;S.frame.cropPath=null;S.frame.ox=0;S.frame.oy=0;
     document.body.classList.add("easy");buildBlockTabs();updateStackBtn();updateStackBtnVis();render();}
