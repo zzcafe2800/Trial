@@ -238,6 +238,16 @@
   .pvEditI:focus{outline:2px solid var(--pink);border-color:transparent}
 
   /* mini preview: styled like the in-game (gogh) room card */
+  /* 太さ・距離 の縦バー (ゲーム内サイズの上) */
+  .sideBars{position:fixed;right:18px;bottom:calc(16px + min(100vw,177.78vh)*0.101*0.5625 + 34px);z-index:8;
+    display:flex;flex-direction:column;gap:7px;width:calc(min(100vw,177.78vh)*0.101 + 12px);min-width:160px;
+    background:rgba(13,18,32,.9);border:1px solid rgba(255,255,255,.32);border-radius:9px;padding:8px 11px;
+    box-shadow:0 8px 20px rgba(0,0,0,.5)}
+  .sideBars .sbRow{display:flex;align-items:center;gap:8px}
+  .sideBars .sbLabel{font-size:10.5px;font-weight:800;color:#fff;white-space:nowrap;min-width:24px}
+  .sideBars .sbVal{font-size:10.5px;font-weight:800;color:#cfe0ea;min-width:30px;text-align:right}
+  .sideBars input[type=range]{flex:1 1 auto;min-width:0;accent-color:var(--blue);height:4px}
+  body.easy .sideBars{display:none}
   .miniPv{position:fixed;right:18px;bottom:16px;z-index:7;cursor:pointer;
     background:rgba(13,18,32,.9);border:1px solid rgba(255,255,255,.32);border-radius:7px;
     padding:6px 6px 5px;box-shadow:0 10px 26px rgba(0,0,0,.55);
@@ -404,9 +414,9 @@
   .mBtn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
   .mBtn b{display:block;font-size:16px;font-weight:800;letter-spacing:.06em}
   .mBtn span{font-size:11.5px;opacity:.94}
-  .mBtn.ghost{background:#fffdf8;color:var(--ink)}
-  .mBtn.ghost b{color:var(--pink)}
-  .mBtn.ghost span{color:var(--ink-soft)}
+  .mBtn.ghost{background:var(--pink);color:#fff;border-color:var(--ink)}
+  .mBtn.ghost b{color:#fff}
+  .mBtn.ghost span{color:#ffe8f0}
   .welcomeOv{position:fixed;inset:0;z-index:69;display:flex;align-items:center;justify-content:center;
     background:radial-gradient(100% 80% at 50% 0%,rgba(255,214,150,.06),transparent 60%),linear-gradient(160deg,#2c2117,#1a120c)}
   .welcomeCard{position:relative;background:var(--paper);background-image:var(--noise);
@@ -468,6 +478,14 @@
     <div class="hint">文字・人物はキャンバス上で指でドラッグ</div>
   </div>
   <button id="pvBtn" class="pvbtn">✦ プレビュー</button>
+</div>
+<div class="sideBars" id="sideBars">
+  <div class="sbRow"><span class="sbLabel">太さ</span>
+    <input type="range" id="sbThick" min="1" max="16" step="0.5" value="7">
+    <span class="sbVal" id="sbThickV">7%</span></div>
+  <div class="sbRow"><span class="sbLabel">距離</span>
+    <input type="range" id="sbInset" min="0" max="20" step="0.5" value="4">
+    <span class="sbVal" id="sbInsetV">4%</span></div>
 </div>
 <div class="miniPv" id="miniPv" title="クリックでフルプレビュー">
   <canvas id="miniC" width="350" height="200"></canvas>
@@ -681,7 +699,7 @@
 
 <script>
 "use strict";
-const VERSION="0.57.0";
+const VERSION="0.58.0";
 const cv=document.getElementById("c"),ctx=cv.getContext("2d");
 const W=1920,H=1080;
 let uid=0;const nid=()=>"b"+(++uid);
@@ -2297,6 +2315,8 @@ function syncFrameUI(){const F=curFrame();
   if($("thick")){$("thick").value=Math.round(F.thick*100);$("thickV").textContent=Math.round(F.thick*100)+"%";}
   if($("thickMini")){$("thickMini").value=Math.round(F.thick*100);const _l=$("thickMiniV");if(_l)_l.textContent=Math.round(F.thick*100)+"%";}
   if($("inset")){$("inset").value=Math.round(F.inset*100);$("insetV").textContent=Math.round(F.inset*100)+"%";}
+  if($("sbThick")){$("sbThick").value=Math.round(F.thick*100);const _st=$("sbThickV");if(_st)_st.textContent=Math.round(F.thick*100)+"%";}
+  if($("sbInset")){$("sbInset").value=Math.round(F.inset*100);const _si=$("sbInsetV");if(_si)_si.textContent=Math.round(F.inset*100)+"%";}
   if($("fc1"))$("fc1").value=F.c1;if($("fc2"))$("fc2").value=F.c2;
   document.querySelectorAll("#gal .swatch").forEach(sw=>sw.classList.toggle("on",sw.dataset.type===F.type));
   document.querySelectorAll("#texChips .chip").forEach(z=>z.classList.toggle("on",z.dataset.v===(F.tex||"none")));
@@ -2582,7 +2602,17 @@ colorIn("fadeColor",v=>{S.room.fadeColor=v;render();});
 slider("patAmt",v=>{const P=curPat();if(P)P.amt=v/100;else S.room.patAmt=v/100;},v=>v+"%");
 slider("patScale",v=>{const P=curPat();if(P)P.scale=v/100;else S.room.patScale=v/100;},v=>v+"%");
 slider("scrimAmt",v=>S.scrim.amt=v/100,v=>v+"%");
-slider("thick",v=>{curFrame().thick=v/100;const tm=$("thickMini");if(tm){tm.value=v;const l=$("thickMiniV");if(l)l.textContent=v+"%";}refreshGallery();},v=>v+"%");slider("inset",v=>curFrame().inset=v/100,v=>v+"%");slider("bgAng",v=>S.bg.ang=v,v=>v+"°");
+slider("thick",v=>{curFrame().thick=v/100;const tm=$("thickMini");if(tm){tm.value=v;const l=$("thickMiniV");if(l)l.textContent=v+"%";}const sb=$("sbThick");if(sb){sb.value=v;const sl=$("sbThickV");if(sl)sl.textContent=v+"%";}refreshGallery();},v=>v+"%");slider("inset",v=>{curFrame().inset=v/100;const si=$("sbInset");if(si){si.value=v;const sl=$("sbInsetV");if(sl)sl.textContent=v+"%";}},v=>v+"%");slider("bgAng",v=>S.bg.ang=v,v=>v+"°");
+// side bars (太さ・距離) — mirror the panel sliders + update everything live
+(function(){const st=$("sbThick");if(st)st.addEventListener("input",()=>{const v=+st.value;curFrame().thick=v/100;
+  const sl=$("sbThickV");if(sl)sl.textContent=v+"%";
+  const ts=$("thick");if(ts){ts.value=v;const tl=$("thickV");if(tl)tl.textContent=v+"%";}
+  const tm=$("thickMini");if(tm){tm.value=v;const ml=$("thickMiniV");if(ml)ml.textContent=v+"%";}
+  refreshGallery();render();});
+  const si=$("sbInset");if(si)si.addEventListener("input",()=>{const v=+si.value;curFrame().inset=v/100;
+  const sl=$("sbInsetV");if(sl)sl.textContent=v+"%";
+  const ins=$("inset");if(ins){ins.value=v;const il=$("insetV");if(il)il.textContent=v+"%";}
+  render();});})();
 const step=0.04;on("roomL","click",()=>{S.room.ox-=step;render();});on("roomR","click",()=>{S.room.ox+=step;render();});
 on("roomU","click",()=>{S.room.oy-=step;render();});on("roomD","click",()=>{S.room.oy+=step;render();});
 function colorIn(id,setter){on(id,"input",e=>{setter(e.target.value);render();});}
@@ -4171,6 +4201,8 @@ function syncUI(){
   $("thick").value=Math.round(S.frame.thick*100);$("thickV").textContent=Math.round(S.frame.thick*100)+"%";
   if($("thickMini")){$("thickMini").value=Math.round(S.frame.thick*100);const _lm=$("thickMiniV");if(_lm)_lm.textContent=Math.round(S.frame.thick*100)+"%";}
   $("inset").value=Math.round(S.frame.inset*100);$("insetV").textContent=Math.round(S.frame.inset*100)+"%";
+  if($("sbThick")){$("sbThick").value=Math.round(S.frame.thick*100);const _st2=$("sbThickV");if(_st2)_st2.textContent=Math.round(S.frame.thick*100)+"%";}
+  if($("sbInset")){$("sbInset").value=Math.round(S.frame.inset*100);const _si2=$("sbInsetV");if(_si2)_si2.textContent=Math.round(S.frame.inset*100)+"%";}
   $("scrimAmt").value=Math.round(S.scrim.amt*100);$("scrimAmtV").textContent=Math.round(S.scrim.amt*100)+"%";
   $("shapeSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===S.room.shape));
   $("scrimSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===S.scrim.type));
